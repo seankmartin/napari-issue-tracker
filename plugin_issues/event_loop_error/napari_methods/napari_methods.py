@@ -97,7 +97,5 @@ class uic(object):
         print("Run successfully.")
 
 
-def methods_main():
-    viewer = napari.Viewer()
-    ui = uic(viewer)
-    napari.run(max_loop_level=2)
+def methods_main(napari_viewer):
+    return uic(napari_viewer)
