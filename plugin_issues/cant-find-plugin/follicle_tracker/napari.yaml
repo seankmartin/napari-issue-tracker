@@ -1,0 +1,11 @@
+name: follicle-tracker
+display_name: follicle tracker
+contributions:
+  commands:
+    - id: follicle-tracker.get_h5_reader
+      python_name: follicle_tracker.reader_hdf5_plugin:napari_get_reader
+      title: Open ultrasound images stored as h5 or hdf5 files
+  readers:
+    - command: follicle-tracker.get_h5_reader
+      accepts_directories: false
+      filename_patterns: ['*.h5', '*.hdf5']
