@@ -1,5 +1,3 @@
-#See https://forum.image.sc/t/pytest-make-napari-viewer-changes-selected-layer-when-initializing-custom-key-binding/79798/2
-
 import pytest
 import napari
 from typing import Any
@@ -11,16 +9,22 @@ class ChangeWidget(QWidget):
     def __init__(self, viewer: napari.viewer.Viewer):
         super().__init__()
 
-        self._layer_changed = False
         self.viewer = viewer
+        self.layer_changed = False
         self.viewer.layers.selection.events.changed.connect(self.print)
         self.viewer.bind_key("Shift-E", self.func)
+        self.viewer.bind_key("Shift-F", self.func)
 
     def func(self, _: napari.viewer.Viewer):
         print("Shift-E pressed")
     
     def print(self):
-        raise RuntimeError("The layer changed") 
+        print("The layer changed")
+        print(list(self.viewer.keymap.keys()))
+
+    def new_print(self):
+        print("The layer changed after intialization")
+        print(list(self.viewer.keymap.keys()))
 
 def test_creating_widget_with_data(
     make_napari_viewer: Any,
@@ -31,8 +35,12 @@ def test_creating_widget_with_data(
         rgb=True,
     )
     widget = ChangeWidget(viewer)
+    assert(not widget.layer_changed)
 
-    # Do your tests here
-    assert(not widget._layer_changed)
-
+    print("We unselected the layer")
+    viewer.layers.selection = []
     viewer.layers.selection.events.changed.disconnect()
+
+    print("We selected the layer")
+    viewer.layers.selection = [viewer.layers[0]]
+    viewer.layers.selection.events.changed.connect(widget.new_print)
