@@ -44,7 +44,7 @@ def my_select_widget(label):
     def widget(viewer: napari.Viewer, dropdown):
         if dropdown != "None":
             show_info(f"{dropdown} is chosen for {label}")
-
+    
     return widget
 
 
@@ -55,4 +55,31 @@ w3 = my_two_widget_holder(w1, w2)
 viewer.window.add_dock_widget(w1, name="Select1")
 viewer.window.add_dock_widget(w2, name="Select2")
 viewer.window.add_dock_widget(w3, name="Select1 and Select2")
+
+import numpy as np
+
+def update_selections():
+    show_info("Updating selections due to layer change")
+    show_info(str(w1.dropdown.choices))
+    w3.call_button.clicked()
+    show_info(str(w1.dropdown.choices))
+
+# Some automation to make it easier to debug
+here = Path(__file__).parent
+w3.filename.value = here / "test_data.csv"
+w3.call_button.clicked()
+w1.call_button.clicked()
+w2.call_button.clicked()
+
+# This will clear the selections
+viewer.add_image(np.random.rand(10, 10))
+
+# This will get the selections back
+w3.call_button.clicked()
+
+# This won't help as the choices are all there at the time of event
+viewer.layers.events.inserted.connect(update_selections)
+viewer.layers.events.removed.connect(update_selections)
+viewer.layers.events.moved.connect(update_selections)
+
 napari.run()
