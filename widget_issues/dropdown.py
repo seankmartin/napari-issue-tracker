@@ -8,7 +8,7 @@ class DropdownSetupWidget(Container):
         super().__init__(*args, **kwargs)
         self._dropdown_choices = ()
         self.append(
-            ComboBox(name="Dropdown", choices=self.dropdown_choices, label="Select")
+            ComboBox(name="Dropdown", choices=self.get_dropdown_choices, label="Select")
         )
         self.append(
             FileEdit(
@@ -22,7 +22,7 @@ class DropdownSetupWidget(Container):
 
         self.CSVButton.changed.connect(self.update_dropdown_choices)
 
-    def dropdown_choices(self, dropdown_widget):
+    def get_dropdown_choices(self, dropdown_widget):
         return self._dropdown_choices
 
     def update_dropdown_choices(self):
@@ -31,11 +31,6 @@ class DropdownSetupWidget(Container):
             df = pd.read_csv(path)
             self._dropdown_choices = list(df.columns)
             self.Dropdown.reset_choices()
-
-    def append(self, item):
-        super().append(item)
-        item._main_widget = self
-
 
 viewer = napari.Viewer()
 viewer.window.add_dock_widget(DropdownSetupWidget())
