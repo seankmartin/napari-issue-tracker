@@ -1,22 +1,42 @@
 import napari
-from magicgui import magicgui
-import numpy as np
+import pandas as pd
+from magicgui.widgets import ComboBox, Container, FileEdit, PushButton
 
 
-def my_widget():
-    @magicgui(
-        dropdown={"widget_type": "ComboBox", "choices": ()},
-        text_input={"widget_type": "LineEdit"},
-    )
-    def widget(viewer: napari.Viewer, dropdown, text_input):
-        print(widget.dropdown)
-        if text_input != "":
-            widget.dropdown.choices = np.append(widget.dropdown.choices, text_input)
-            widget.dropdown.value = text_input
+class DropdownSetupWidget(Container):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dropdown_choices = ()
+        self.append(
+            ComboBox(name="Dropdown", choices=self.dropdown_choices, label="Select")
+        )
+        self.append(
+            FileEdit(
+                name="CSVSelect",
+                label="CSV file to select based on",
+                mode="r",
+                filter="*.csv",
+            )
+        )
+        self.append(PushButton(name="CSVButton", text="Update selection options"))
 
-    return widget
+        self.CSVButton.changed.connect(self.update_dropdown_choices)
+
+    def dropdown_choices(self, dropdown_widget):
+        return self._dropdown_choices
+
+    def update_dropdown_choices(self):
+        path = self.CSVSelect.value
+        if path.is_file():
+            df = pd.read_csv(path)
+            self._dropdown_choices = list(df.columns)
+            self.Dropdown.reset_choices()
+
+    def append(self, item):
+        super().append(item)
+        item._main_widget = self
 
 
 viewer = napari.Viewer()
-viewer.window.add_dock_widget(my_widget())
+viewer.window.add_dock_widget(DropdownSetupWidget())
 napari.run()
